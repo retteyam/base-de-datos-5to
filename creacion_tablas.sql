@@ -1,108 +1,100 @@
-DROP DATABASE IF EXISTS sgbd;
-CREATE DATABASE sgbd;
-USE sgbd;
+DROP DATABASE IF EXISTS dbSistemaGestion;
+CREATE DATABASE dbSistemaGestion;
+USE dbSistemaGestion;
 
-CREATE TABLE cliente (
-    id VARCHAR(8) PRIMARY KEY DEFAULT(LEFT(UUID(),8)),
-    nombre VARCHAR(32) NOT NULL,
-    apellido_paterno VARCHAR(32) NOT NULL,
-    apellido_materno VARCHAR(32) NOT NULL,
-    telefono VARCHAR(9)
-);
-
-CREATE TABLE mozo (
-    id VARCHAR(8) PRIMARY KEY DEFAULT(LEFT(UUID(),8)),
-    nombre VARCHAR(32) NOT NULL,
-    apellido_paterno VARCHAR(32) NOT NULL,
-    apellido_materno VARCHAR(32) NOT NULL
-);
-CREATE TABLE mesa (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    estado VARCHAR(9) NOT NULL DEFAULT 'LIBRE',
-    inicio_reserva DATETIME NULL,
-    fin_reserva DATETIME NULL,
-    CONSTRAINT check_mesa_estado CHECK(estado IN ('RESERVADA', 'OCUPADA', 'LIBRE', 'INACTIVA'))
-);
-CREATE TABLE familia (
-	id INT PRIMARY KEY AUTO_INCREMENT,
-	nombre VARCHAR(14),
-    CONSTRAINT unique_familia_nombre UNIQUE (nombre)
-);
-CREATE TABLE producto (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    nombre VARCHAR(100) NOT NULL,
-    familia_id INT,
-    descripcion TEXT,
-    precio DECIMAL(6,2) NOT NULL,
-    CONSTRAINT fk_producto_familia_id FOREIGN KEY (familia_id) REFERENCES familia(id),
-    CONSTRAINT check_producto_precio CHECK (precio > 0)
+-- Tabla Cliente
+CREATE TABLE Cliente (
+    id_cliente VARCHAR(15) PRIMARY KEY,
+    nombres VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(100) NOT NULL,
+    clienteEmail VARCHAR(100),
+    clienteCelular VARCHAR(15)
 );
 
-CREATE TABLE pedido (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    estado VARCHAR(9) NOT NULL DEFAULT 'PENDIENTE',
-    fecha DATETIME NOT NULL DEFAULT NOW(),
-    mozo_id VARCHAR(8),
-    CONSTRAINT fk_pedido__mozo_id FOREIGN KEY (mozo_id) REFERENCES mozo(id),
-    CONSTRAINT check_pedido_estado CHECK(estado IN ('PENDIENTE', 'CANCELADO'))
+-- Tabla Empleado
+CREATE TABLE Empleado (
+    Empleado_Id INT PRIMARY KEY AUTO_INCREMENT,
+    PrsDNI VARCHAR(15) NOT NULL,
+    EmpApellidoPaterno VARCHAR(50) NOT NULL,
+    EmpApellidoMaterno VARCHAR(50) NOT NULL,
+    EmpNombres VARCHAR(50) NOT NULL,
+    EmpDireccion VARCHAR(80),
+    EmpCelular VARCHAR(9),
+    EmpFechaIngreso DATETIME,
+    EmpSueldo DECIMAL(18,2) DEFAULT 0,
+    EmpRol VARCHAR(10)
 );
 
-CREATE TABLE pedido_mesa (
-    pedido_id INT,
-    mesa_id INT,
-    PRIMARY KEY (pedido_id, mesa_id),
-    CONSTRAINT fk_pedido_mesa_pedido_id FOREIGN KEY (pedido_id) REFERENCES pedido(id),
-    CONSTRAINT fk_pedido_mesa_mesa_id FOREIGN KEY (mesa_id) REFERENCES mesa(id)
+-- Tabla Categoría
+CREATE TABLE Categoria (
+    Categoria_id INT PRIMARY KEY AUTO_INCREMENT,
+    tipoCategoria VARCHAR(50) NOT NULL,
+    descripcionCateg VARCHAR(255)
 );
 
-CREATE TABLE producto_pedido (
-    pedido_id INT,
-    producto_id INT,
-    PRIMARY KEY (pedido_id, producto_id),
-    CONSTRAINT fk_producto_pedido_pedido_id FOREIGN KEY (pedido_id) REFERENCES pedido(id),
-    CONSTRAINT fk_producto_pedido_producto_id FOREIGN KEY (producto_id) REFERENCES producto(id)
+-- Tabla Producto
+CREATE TABLE Producto (
+    Producto_id VARCHAR(15) PRIMARY KEY,
+    Categoria_id INT,
+    sProNombre LONGTEXT NOT NULL,
+    sProDescripcion LONGTEXT,
+    PrecioPro DECIMAL(18,5) NOT NULL CHECK (PrecioPro > 0),
+    stock INT DEFAULT 0,
+    CONSTRAINT fk_producto_categoria FOREIGN KEY (Categoria_id) REFERENCES Categoria(Categoria_id)
 );
 
-CREATE TABLE reserva (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    fecha_inicio DATETIME NOT NULL,
-    fecha_fin DATETIME NOT NULL,
-    precio_adicional DECIMAL(6,2),
-    cliente_id VARCHAR(8),
-    pedido_id INT,
-    CONSTRAINT fk_reserva_cliente_id FOREIGN KEY (cliente_id) REFERENCES cliente(id),
-    CONSTRAINT fk_reserva_pedido_id FOREIGN KEY (pedido_id) REFERENCES pedido(id),
-    CONSTRAINT check_reserva_precio_adicional CHECK (precio_adicional >= 0)
+-- Tabla Pedido
+CREATE TABLE Pedido (
+    Pedido_Id INT PRIMARY KEY AUTO_INCREMENT,
+    PDFechaReg DATETIME NOT NULL DEFAULT NOW(),
+    PDEstadoPedido VARCHAR(10) NOT NULL DEFAULT 'PENDIENTE',
+    Empleado_Id INT,
+    CONSTRAINT fk_pedido_empleado FOREIGN KEY (Empleado_Id) REFERENCES Empleado(Empleado_Id),
+    CONSTRAINT check_pedido_estado CHECK (PDEstadoPedido IN ('PENDIENTE', 'CANCELADO', 'ENTREGADO'))
 );
 
-CREATE TABLE venta (
-    id VARCHAR(8) PRIMARY KEY DEFAULT(LEFT(UUID(),8)),
-    total DECIMAL(6,2) NOT NULL,
-    fecha DATETIME NOT NULL DEFAULT NOW(),
-    cliente_id VARCHAR(8) NULL,
-    pedido_id INT,
-    CONSTRAINT fk_venta_cliente_id FOREIGN KEY (cliente_id) REFERENCES cliente(id),
-    CONSTRAINT fk_venta_pedido_id FOREIGN KEY (pedido_id) REFERENCES pedido(id),
-    CONSTRAINT check_venta_total CHECK (total > 0)
+-- Tabla ProductoPedido
+CREATE TABLE ProductoPedido (
+    Producto_Id VARCHAR(15),
+    Pedido_Id INT,
+    PPcantidad INT NOT NULL DEFAULT 1,
+    PPprecio DECIMAL(10,2) NOT NULL,
+    PPSubtotal DECIMAL(10,2) NOT NULL,
+    PRIMARY KEY (Producto_Id, Pedido_Id),
+    CONSTRAINT fk_productopedido_producto FOREIGN KEY (Producto_Id) REFERENCES Producto(Producto_id),
+    CONSTRAINT fk_productopedido_pedido FOREIGN KEY (Pedido_Id) REFERENCES Pedido(Pedido_Id)
 );
 
-CREATE TABLE factura (
-    venta_id VARCHAR(8),
+-- Tabla Venta
+CREATE TABLE Venta (
+    Venta_Id INT PRIMARY KEY AUTO_INCREMENT,
+    Cliente_Id VARCHAR(15),
+    Empleado_Id INT,
+    VfechaVenta DATETIME NOT NULL DEFAULT NOW(),
+    VtotalVenta DECIMAL(10,2) NOT NULL CHECK (VtotalVenta > 0),
+    VestadoVenta VARCHAR(10) DEFAULT 'PAGADO',
+    VformaPago VARCHAR(50),
+    CONSTRAINT fk_venta_cliente FOREIGN KEY (Cliente_Id) REFERENCES Cliente(id_cliente),
+    CONSTRAINT fk_venta_empleado FOREIGN KEY (Empleado_Id) REFERENCES Empleado(Empleado_Id),
+    CONSTRAINT check_venta_estado CHECK (VestadoVenta IN ('PAGADO', 'ANULADO', 'PENDIENTE'))
+);
+
+-- Tabla Factura
+CREATE TABLE Factura (
+    Venta_Id INT,
     ruc VARCHAR(11) NOT NULL,
-    PRIMARY KEY (venta_id, ruc),
-    CONSTRAINT fk_factura_venta_id FOREIGN KEY (venta_id) REFERENCES venta(id),
-    CONSTRAINT check_factura_ruc_length CHECK (CHAR_LENGTH(ruc) = 11)
+    RazonSocial VARCHAR(20),
+    Direccion VARCHAR(40),
+    PRIMARY KEY (Venta_Id),
+    CONSTRAINT fk_factura_venta FOREIGN KEY (Venta_Id) REFERENCES Venta(Venta_Id),
+    CONSTRAINT check_factura_ruc CHECK (CHAR_LENGTH(ruc) = 11)
 );
 
-CREATE TABLE boleta (
-    venta_id VARCHAR(8),
-    dni VARCHAR(8) NOT NULL,
-    PRIMARY KEY (venta_id, dni),
-    CONSTRAINT fk_boleta_venta_id FOREIGN KEY (venta_id) REFERENCES venta(id),
-    CONSTRAINT check_boleta_dni_length CHECK (CHAR_LENGTH(dni) = 8)
+-- Tabla Boleta
+CREATE TABLE Boleta (
+    Venta_Id INT,
+    nroDocumento VARCHAR(20) NOT NULL,
+    tipoDocumento VARCHAR(20),
+    PRIMARY KEY (Venta_Id),
+    CONSTRAINT fk_boleta_venta FOREIGN KEY (Venta_Id) REFERENCES Venta(Venta_Id)
 );
-
-
-	
-
-	
