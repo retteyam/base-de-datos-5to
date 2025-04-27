@@ -1,5 +1,6 @@
 -- Inserción de productos para Librería Zoe
-INSERT INTO producto(nombre, familia_id, descripcion, precio) VALUES
+INSERT INTO producto(nombre, familia_id, descripcion, precio) 
+VALUES
 -- Materiales de Escritura
 ('Lápiz Faber-Castell HB', 1, 'Paquete de 12 lápices grafito HB', 8.50),
 ('Lápiz Mongol N°2', 1, 'Paquete de 10 lápices amarillos', 7.80),
