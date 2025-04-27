@@ -1,4 +1,3 @@
--- Inserción de productos para Librería Zoe
 INSERT INTO producto(nombre, familia_id, descripcion, precio) 
 VALUES
 -- Materiales de Escritura
