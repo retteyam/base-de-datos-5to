@@ -1,6 +1,6 @@
-DROP DATABASE IF EXISTS dbSistemaGestion;
-CREATE DATABASE dbSistemaGestion;
-USE dbSistemaGestion;
+DROP DATABASE IF EXISTS dbSGZoe;
+CREATE DATABASE dbSGZoe;
+USE dbSGZoe;
 
 -- Tabla Cliente
 CREATE TABLE Cliente (
