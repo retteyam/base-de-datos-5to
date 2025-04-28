@@ -68,6 +68,7 @@ CREATE TABLE ProductoPedido (
 -- Tabla Venta
 CREATE TABLE Venta (
     Venta_Id INT PRIMARY KEY AUTO_INCREMENT,
+    Pedido_Id INT UNIQUE, -- Esto es CLAVE para que sea 1 a 1
     Cliente_Id VARCHAR(15),
     Empleado_Id INT,
     VfechaVenta DATETIME NOT NULL DEFAULT NOW(),
@@ -76,9 +77,9 @@ CREATE TABLE Venta (
     VformaPago VARCHAR(50),
     CONSTRAINT fk_venta_cliente FOREIGN KEY (Cliente_Id) REFERENCES Cliente(id_cliente),
     CONSTRAINT fk_venta_empleado FOREIGN KEY (Empleado_Id) REFERENCES Empleado(Empleado_Id),
+    CONSTRAINT fk_venta_pedido FOREIGN KEY (Pedido_Id) REFERENCES Pedido(Pedido_Id),
     CONSTRAINT check_venta_estado CHECK (VestadoVenta IN ('PAGADO', 'ANULADO', 'PENDIENTE'))
 );
-
 -- Tabla Factura
 CREATE TABLE Factura (
     Venta_Id INT,
